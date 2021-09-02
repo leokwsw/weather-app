@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/itemHolder"
+  android:layout_width="match_parent"
+  android:layout_height="48dp"
+  android:clickable="true"
+  android:focusable="true"
+  android:foreground="?attr/selectableItemBackground"
+  android:gravity="center_vertical">
+
+  <androidx.appcompat.widget.AppCompatImageView
+    android:id="@+id/img_search"
+    android:layout_width="24dp"
+    android:layout_height="24dp"
+    android:layout_centerVertical="true"
+    android:layout_marginStart="16dp"
+    android:contentDescription="@null"
+    app:srcCompat="@drawable/ic_search"
+    app:tint="@android:color/darker_gray" />
+
+  <androidx.appcompat.widget.AppCompatTextView
+    android:id="@+id/tv_text"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_centerVertical="true"
+    android:layout_marginStart="8dp"
+    android:layout_toStartOf="@+id/img_delete"
+    android:layout_toEndOf="@+id/img_search"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:textColor="@android:color/black"
+    android:textSize="16sp" />
+
+  <androidx.appcompat.widget.AppCompatImageView
+    android:id="@+id/img_delete"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_alignParentEnd="true"
+    android:layout_centerVertical="true"
+    android:layout_marginEnd="16dp"
+    android:clickable="true"
+    android:contentDescription="@null"
+    android:focusable="true"
+    android:foreground="@drawable/image_background"
+    android:padding="12dp"
+    android:tint="@android:color/darker_gray"
+    app:srcCompat="@drawable/ic_baseline_delete_24" />
+</RelativeLayout>

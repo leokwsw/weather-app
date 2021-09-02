@@ -1,4 +1,4 @@
-package dev.leonardpark.app.weatherapp.data
+package dev.leonardpark.app.weatherapp.api
 
 import dev.leonardpark.app.weatherapp.model.*
 

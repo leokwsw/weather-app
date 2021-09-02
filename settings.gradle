@@ -1,2 +1,4 @@
 rootProject.name = "WeatherApp"
 include ':app'
+include ':material-search-view'
+project(':material-search-view').projectDir = new File('Android-Material-SearchView/material-serarch-view')

@@ -8,7 +8,7 @@
 
   <com.google.android.material.appbar.AppBarLayout
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="?actionBarSize"
     android:theme="@style/Theme.WeatherApp.AppBarOverlay">
 
     <androidx.appcompat.widget.Toolbar
@@ -20,19 +20,21 @@
 
   </com.google.android.material.appbar.AppBarLayout>
 
+  <dev.leonardpark.app.material_serarch_view.MaterialSearchView
+    android:id="@+id/searchHolder"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    android:visibility="invisible"
+    app:cardElevation="4dp"
+    app:search_hint="Search FatSecret"
+    app:search_menu_position="1" />
+
   <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main">
-
-    <androidx.appcompat.widget.SearchView
-      android:id="@+id/search_view"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
       android:id="@+id/tv_response"
@@ -41,7 +43,7 @@
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/search_view" />
+      app:layout_constraintTop_toTopOf="parent" />
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 

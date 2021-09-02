@@ -1,0 +1,3 @@
+[submodule "Android-Material-SearchView"]
+	path = Android-Material-SearchView
+	url = git@github.com:leokwsw/Android-Material-SearchView.git

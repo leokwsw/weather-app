@@ -2,14 +2,29 @@ package dev.leonardpark.app.weatherapp
 
 import android.app.Application
 import android.content.Context
-import dev.leonardpark.app.weatherapp.data.WeatherFactor
-import dev.leonardpark.app.weatherapp.data.WeatherService
+import dev.leonardpark.app.weatherapp.api.WeatherFactor
+import dev.leonardpark.app.weatherapp.api.WeatherService
+import dev.leonardpark.app.weatherapp.db.SearchDatabase
+import dev.leonardpark.app.weatherapp.db.SearchExecutors
+import dev.leonardpark.app.weatherapp.db.SearchRepository
 import io.reactivex.Scheduler
 import io.reactivex.schedulers.Schedulers
 
 class WeatherApplication : Application() {
   private var weatherService: WeatherService? = null
   private var scheduler: Scheduler? = null
+  private lateinit var searchExecutors: SearchExecutors
+
+  override fun onCreate() {
+    super.onCreate()
+    searchExecutors = SearchExecutors()
+  }
+
+  private fun getDatabase(): SearchDatabase = SearchDatabase.getInstance(this)
+
+  fun getSearchRepository(): SearchRepository {
+    return SearchRepository.getInstance(searchExecutors, getDatabase())
+  }
 
   private operator fun get(context: Context): WeatherApplication {
     return context.applicationContext as WeatherApplication
@@ -27,13 +42,5 @@ class WeatherApplication : Application() {
   fun subscribeScheduler(): Scheduler {
     if (scheduler == null) scheduler = Schedulers.io()
     return scheduler as Scheduler
-  }
-
-  fun setWeatherService(weatherService: WeatherService) {
-    this.weatherService = weatherService
-  }
-
-  fun setScheduler(scheduler: Scheduler) {
-    this.scheduler = scheduler
   }
 }

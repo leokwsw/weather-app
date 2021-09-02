@@ -1,24 +1,19 @@
 package dev.leonardpark.app.weatherapp.view
 
-import android.app.SearchManager
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.provider.SearchRecentSuggestions
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
-import androidx.core.view.MenuItemCompat
-import androidx.lifecycle.Observer
-import dev.leonardpark.app.weatherapp.MySuggestionProvider
+import dev.leonardpark.app.material_serarch_view.MaterialSearchView
 import dev.leonardpark.app.weatherapp.R
-import dev.leonardpark.app.weatherapp.data.WeatherResponse
+import dev.leonardpark.app.weatherapp.api.WeatherResponse
 import dev.leonardpark.app.weatherapp.databinding.ActivityMainBinding
+import dev.leonardpark.app.weatherapp.db.SearchEntity
 import dev.leonardpark.app.weatherapp.viewmodel.WeatherViewModel
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener,
+  SearchRecyclerInterface {
   private lateinit var binding: ActivityMainBinding
   private lateinit var weatherViewModel: WeatherViewModel
 
@@ -35,31 +30,69 @@ class MainActivity : AppCompatActivity() {
 
     setSupportActionBar(binding.toolbar)
 
-    weatherViewModel.isLoading.observe(this, Observer {
+    weatherViewModel.isLoading.observe(this) {
       isLoading = it
-    })
+    }
 
-    weatherViewModel.weatherResponse.observe(this, Observer {
+    weatherViewModel.weatherResponse.observe(this) {
       mWeatherResponse = it
       binding.tvResponse.text = mWeatherResponse.toString()
       Log.d("testmo", "data")
       Log.d("testmo", mWeatherResponse.toString())
-    })
+    }
 
-    setupSearchView()
+    initSearch()
   }
 
-  private fun setupSearchView() {
-    binding.searchView.queryHint = "Search"
+  // region SearchView
 
-    if (Intent.ACTION_SEARCH == intent.action) {
-      intent.getStringExtra(SearchManager.QUERY)?.also { query ->
-        // doMySearch
-        SearchRecentSuggestions(this, MySuggestionProvider.AUTHORITY, MySuggestionProvider.MODE)
-          .saveRecentQuery(query, null)
-      }
+  private lateinit var searchAdapter: SearchRecyclerAdapter
+
+  private fun initSearch() {
+    searchAdapter = SearchRecyclerAdapter(this)
+    binding.searchHolder.setSearchRecyclerAdapter(searchAdapter)
+    binding.searchHolder.addQueryTextListener(this)
+    weatherViewModel.getSearchListLive.observe(this) { list ->
+      searchAdapter.setItems(list)
     }
   }
+
+  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    menuInflater.inflate(R.menu.menu_main, menu)
+    return true
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return if (item.itemId == R.id.action_search) {
+      binding.searchHolder.showSearch()
+      true
+    } else {
+      super.onOptionsItemSelected(item)
+    }
+  }
+
+  override fun onQueryTextSubmit(query: String?): Boolean {
+    binding.searchHolder.hideRecycler()
+    weatherViewModel.search(query ?: "")
+    return true
+  }
+
+  override fun onQueryTextChange(newText: String?): Boolean {
+    binding.searchHolder.showRecycler()
+    return false
+  }
+
+  override fun onSearchItemClicked(query: String) {
+    binding.searchHolder.setSearchText(query)
+    binding.searchHolder.hideRecycler()
+    weatherViewModel.search(query)
+  }
+
+  override fun onSearchDeleteClicked(searchEntity: SearchEntity) {
+    weatherViewModel.deleteEntity(searchEntity)
+  }
+
+  // endregion
 
 
 }

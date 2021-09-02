@@ -1,4 +1,4 @@
-package dev.leonardpark.app.weatherapp.data
+package dev.leonardpark.app.weatherapp.api
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
