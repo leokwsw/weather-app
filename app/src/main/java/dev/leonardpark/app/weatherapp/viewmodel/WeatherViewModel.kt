@@ -3,6 +3,7 @@ package dev.leonardpark.app.weatherapp.viewmodel
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import dev.leonardpark.app.weatherapp.R
 import dev.leonardpark.app.weatherapp.WeatherApplication
 import dev.leonardpark.app.weatherapp.api.WeatherResponse
 import dev.leonardpark.app.weatherapp.db.SearchEntity
@@ -12,7 +13,7 @@ import io.reactivex.disposables.CompositeDisposable
 import java.lang.Double.parseDouble
 import java.util.*
 
-class WeatherViewModel(context: Context) : Observable() {
+class WeatherViewModel(private val context: Context) : Observable() {
   private val mCompositeDisposable = CompositeDisposable()
 
   private val weatherApplication = WeatherApplication().create(context)
@@ -56,11 +57,11 @@ class WeatherViewModel(context: Context) : Observable() {
     searchRepository.deleteSearches(searchEntity)
   }
 
-  private fun searchByCityName(keyword: String) {
+  private fun searchByCityName(cityName: String) {
     isLoading.value = true
-    searchMethod.value = "Keyword"
+    searchMethod.value = context.getString(R.string.method_city_name)
     mCompositeDisposable.add(
-      weatherService.getWeatherByCityName(keyword)
+      weatherService.getWeatherByCityName(cityName)
         .subscribeOn(weatherApplication.subscribeScheduler())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe({
@@ -75,7 +76,7 @@ class WeatherViewModel(context: Context) : Observable() {
 
   private fun searchByCoordinate(lat: Float, lon: Float) {
     isLoading.value = true
-    searchMethod.value = "Coordinate"
+    searchMethod.value = context.getString(R.string.method_coordinate)
     mCompositeDisposable.add(
       weatherService.getWeatherByCoordinate(lat, lon)
         .subscribeOn(weatherApplication.subscribeScheduler())
@@ -92,7 +93,7 @@ class WeatherViewModel(context: Context) : Observable() {
 
   private fun searchByZipCode(zipCode: String) {
     isLoading.value = true
-    searchMethod.value = "Zip Code"
+    searchMethod.value = context.getString(R.string.method_zip_code)
     mCompositeDisposable.add(
       weatherService.getWeatherByZipCode(zipCode)
         .subscribeOn(weatherApplication.subscribeScheduler())

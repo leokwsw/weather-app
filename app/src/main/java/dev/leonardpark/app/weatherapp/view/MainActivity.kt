@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -54,7 +53,7 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
     }
 
     weatherViewModel.searchMethod.observe(this) {
-      binding.tvSearchMethod.text = "Method: $it"
+      binding.tvSearchMethod.text = String.format(getString(R.string.request_method), it)
     }
 
     initSearch()
@@ -130,20 +129,24 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
     binding.ibLocation.visibility = locationVisibility
 
     if (hasGPSFeature) {
-      val statusStr = if (
-        ContextCompat.checkSelfPermission(
-          this,
-          Manifest.permission.ACCESS_COARSE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED ||
-        ContextCompat.checkSelfPermission(
-          this,
-          Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-      ) {
-        "Location Permission : Denied"
-      } else {
-        "Location Permission : Granted"
-      }
+      val statusStr = String.format(
+        getString(R.string.location_permission_), getString(
+          if (
+            ContextCompat.checkSelfPermission(
+              this,
+              Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+              this,
+              Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+          ) {
+            R.string.denied
+          } else {
+            R.string.granted
+          }
+        )
+      )
 
       binding.tvLocationStatus.text = statusStr
 
@@ -185,14 +188,8 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
       )
       return null
     } else {
-      val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-      return if (location == null) {
-        Log.d("testmo", "Network Location")
-        locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)!!
-      } else {
-        Log.d("testmo", "GPS Location")
-        location
-      }
+      return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)!!
     }
   }
 
@@ -206,7 +203,11 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
           searchLocation(checkLocationPermission()!!)
         } else {
-          Snackbar.make(binding.root, "Location Permission is Denied", Snackbar.LENGTH_INDEFINITE)
+          Snackbar.make(
+            binding.root,
+            String.format(getString(R.string.location_permission_), getString(R.string.denied)),
+            Snackbar.LENGTH_INDEFINITE
+          )
             .show()
         }
       }
@@ -215,7 +216,8 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
   }
 
   private fun searchLocation(location: Location) {
-    binding.tvLocationStatus.text = "Location Permission : Granted"
+    binding.tvLocationStatus.text =
+      String.format(getString(R.string.location_permission_), getString(R.string.granted))
     changeLocationUI(true)
 
     weatherViewModel.search("${location.latitude},${location.longitude}")

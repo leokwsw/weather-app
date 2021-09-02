@@ -1,5 +1,11 @@
 <resources>
   <string name="app_name">WeatherApp</string>
-  <string name="action_settings">Settings</string>
   <string name="action_search">Search</string>
+  <string name="request_method">Method: %s</string>
+  <string name="method_city_name">City Name</string>
+  <string name="method_coordinate">Coordinate</string>
+  <string name="method_zip_code">Zip Code</string>
+  <string name="location_permission_">Location Permission : %s</string>
+  <string name="denied">Denied</string>
+  <string name="granted">Granted</string>
 </resources>
