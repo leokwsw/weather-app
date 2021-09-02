@@ -1,14 +1,19 @@
 package dev.leonardpark.app.weatherapp.view
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import dev.leonardpark.app.weatherapp.R
 import dev.leonardpark.app.weatherapp.databinding.ItemRecentSearchBinding
 import dev.leonardpark.app.weatherapp.db.SearchEntity
 import java.util.*
 
 class SearchRecyclerAdapter(
+  private val context: Context,
+  private val isDark: Boolean,
   private val listener: SearchRecyclerInterface
 ) : RecyclerView.Adapter<SearchRecyclerAdapter.SearchViewHolder>() {
 
@@ -52,7 +57,7 @@ class SearchRecyclerAdapter(
   }
 
   override fun onBindViewHolder(holder: SearchViewHolder, position: Int) {
-    holder.bindView(itemList[position], listener)
+    holder.bindView(isDark, context, itemList[position], listener)
   }
 
   override fun getItemCount(): Int = itemList.size
@@ -60,13 +65,44 @@ class SearchRecyclerAdapter(
   class SearchViewHolder(
     private val binding: ItemRecentSearchBinding
   ) : RecyclerView.ViewHolder(binding.root) {
-    fun bindView(entity: SearchEntity, listener: SearchRecyclerInterface) {
-      binding.tvText.text = entity.getText()
+    fun bindView(
+      isDark: Boolean,
+      context: Context,
+      entity: SearchEntity,
+      listener: SearchRecyclerInterface
+    ) {
+
       binding.itemHolder.setOnClickListener {
         listener.onSearchItemClicked(entity.getText())
       }
-      binding.imgDelete.setOnClickListener {
-        listener.onSearchDeleteClicked(entity)
+
+      binding.imgSearch.setColorFilter(
+        ContextCompat.getColor(
+          context,
+          if (isDark) R.color.white else R.color.black
+        ), android.graphics.PorterDuff.Mode.SRC_IN
+      )
+
+      binding.tvText.apply {
+        text = entity.getText()
+        setTextColor(
+          ContextCompat.getColor(
+            context,
+            if (isDark) R.color.white else R.color.black
+          )
+        )
+      }
+
+      binding.imgDelete.apply {
+        setOnClickListener {
+          listener.onSearchDeleteClicked(entity)
+        }
+        setColorFilter(
+          ContextCompat.getColor(
+            context,
+            if (isDark) R.color.white else R.color.black
+          ), android.graphics.PorterDuff.Mode.SRC_IN
+        )
       }
     }
   }

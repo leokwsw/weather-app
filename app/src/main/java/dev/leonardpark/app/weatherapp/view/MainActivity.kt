@@ -33,8 +33,12 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
   private var isLoading: Boolean = false
   private var mWeatherResponse: WeatherResponse? = null
 
+  private var isDark = false
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    isDark = Utils.isUsingNightModeResources(this)
 
     binding = ActivityMainBinding.inflate(layoutInflater)
     setContentView(binding.root)
@@ -65,12 +69,19 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
   private lateinit var searchAdapter: SearchRecyclerAdapter
 
   private fun initSearch() {
-    searchAdapter = SearchRecyclerAdapter(this)
+    searchAdapter = SearchRecyclerAdapter(this, isDark, this)
     binding.searchHolder.setSearchRecyclerAdapter(searchAdapter)
     binding.searchHolder.addQueryTextListener(this)
     weatherViewModel.getSearchListLive.observe(this) { list ->
       searchAdapter.setItems(list)
     }
+    binding.searchHolder.getImageBack()
+      .setColorFilter(
+        ContextCompat.getColor(
+          this,
+          if (isDark) R.color.white else R.color.black
+        ), android.graphics.PorterDuff.Mode.SRC_IN
+      )
   }
 
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -150,17 +161,26 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
 
       binding.tvLocationStatus.text = statusStr
 
-      binding.ibLocation.setOnClickListener {
-        if (!isUsingLocation) {
-          isUsingLocation = true
-          val location = checkLocationPermission()
+      binding.ibLocation.apply {
+        setColorFilter(
+          ContextCompat.getColor(
+            this@MainActivity,
+            if (isDark) R.color.white else R.color.black
+          ), android.graphics.PorterDuff.Mode.SRC_IN
+        )
 
-          location?.let {
-            searchLocation(it)
+        setOnClickListener {
+          if (!isUsingLocation) {
+            isUsingLocation = true
+            val location = checkLocationPermission()
+
+            location?.let {
+              searchLocation(it)
+            }
+          } else {
+            isUsingLocation = false
+            changeLocationUI(false)
           }
-        } else {
-          isUsingLocation = false
-          changeLocationUI(false)
         }
       }
     }
@@ -233,7 +253,7 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
     binding.ibLocation.setColorFilter(
       ContextCompat.getColor(
         this,
-        if (status) R.color.location_on else R.color.location_off
+        if (status) R.color.location_on else if (isDark) R.color.white else R.color.black
       ), android.graphics.PorterDuff.Mode.SRC_IN
     )
   }
