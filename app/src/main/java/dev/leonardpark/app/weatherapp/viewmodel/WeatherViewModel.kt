@@ -9,6 +9,7 @@ import dev.leonardpark.app.weatherapp.db.SearchEntity
 import dev.leonardpark.app.weatherapp.db.SearchRepository
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import java.lang.Double.parseDouble
 import java.util.*
 
 class WeatherViewModel(context: Context) : Observable() {
@@ -19,13 +20,32 @@ class WeatherViewModel(context: Context) : Observable() {
 
   var isLoading = MutableLiveData<Boolean>()
   var weatherResponse = MutableLiveData<WeatherResponse?>()
+  var searchMethod = MutableLiveData<String>()
 
   private val searchRepository: SearchRepository = weatherApplication.getSearchRepository()
   var getSearchListLive: LiveData<List<SearchEntity>> = searchRepository.getSearchListLive()
 
   fun search(query: String) {
     insertEntity(query)
-    searchByCityName(query)
+    val coordinateArray = query.split(",")
+    if (numeric(query)) {
+      searchByZipCode(query)
+    } else if (coordinateArray.size == 2 && numeric(coordinateArray[0]) && numeric(coordinateArray[1])) {
+      searchByCoordinate(coordinateArray[0].toFloat(), coordinateArray[1].toFloat())
+    } else {
+      searchByCityName(query)
+    }
+  }
+
+  private fun numeric(string: String): Boolean {
+    var numeric = true
+
+    try {
+      parseDouble(string)
+    } catch (e: NumberFormatException) {
+      numeric = false
+    }
+    return numeric
   }
 
   private fun insertEntity(query: String) {
@@ -38,6 +58,7 @@ class WeatherViewModel(context: Context) : Observable() {
 
   private fun searchByCityName(keyword: String) {
     isLoading.value = true
+    searchMethod.value = "Keyword"
     mCompositeDisposable.add(
       weatherService.getWeatherByCityName(keyword)
         .subscribeOn(weatherApplication.subscribeScheduler())
@@ -52,8 +73,9 @@ class WeatherViewModel(context: Context) : Observable() {
     )
   }
 
-  private fun searchByLatLong(lat: Float, lon: Float) {
+  private fun searchByCoordinate(lat: Float, lon: Float) {
     isLoading.value = true
+    searchMethod.value = "Coordinate"
     mCompositeDisposable.add(
       weatherService.getWeatherByCoordinate(lat, lon)
         .subscribeOn(weatherApplication.subscribeScheduler())
@@ -70,6 +92,7 @@ class WeatherViewModel(context: Context) : Observable() {
 
   private fun searchByZipCode(zipCode: String) {
     isLoading.value = true
+    searchMethod.value = "Zip Code"
     mCompositeDisposable.add(
       weatherService.getWeatherByZipCode(zipCode)
         .subscribeOn(weatherApplication.subscribeScheduler())
