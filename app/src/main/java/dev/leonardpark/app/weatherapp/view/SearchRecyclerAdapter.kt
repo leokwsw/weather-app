@@ -21,13 +21,9 @@ class SearchRecyclerAdapter(
 
   fun setItems(items: List<SearchEntity>) {
     val diffResult: DiffUtil.DiffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-      override fun getOldListSize(): Int {
-        return itemList.size
-      }
+      override fun getOldListSize(): Int = itemList.size
 
-      override fun getNewListSize(): Int {
-        return items.size
-      }
+      override fun getNewListSize(): Int = items.size
 
       override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         val newItem = items[newItemPosition]
@@ -38,7 +34,7 @@ class SearchRecyclerAdapter(
       override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         val oldItem = itemList[oldItemPosition]
         val newItem = items[newItemPosition]
-        return oldItem.getText() == newItem.getText() && newItem.getTimestamp() == oldItem.getTimestamp()
+        return oldItem.getText() == newItem.getText() && oldItem.getTimestamp() == newItem.getTimestamp()
       }
     })
     itemList.clear()

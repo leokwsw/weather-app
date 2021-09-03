@@ -20,18 +20,18 @@ class WeatherApplication : Application() {
     searchExecutors = SearchExecutors()
   }
 
-  private fun getDatabase(): SearchDatabase = SearchDatabase.getInstance(this)
-
-  fun getSearchRepository(): SearchRepository {
-    return SearchRepository.getInstance(searchExecutors, getDatabase())
+  fun create(context: Context): WeatherApplication {
+    return get(context)
   }
 
   private operator fun get(context: Context): WeatherApplication {
     return context.applicationContext as WeatherApplication
   }
 
-  fun create(context: Context): WeatherApplication {
-    return get(context)
+  private fun getDatabase(): SearchDatabase = SearchDatabase.getInstance(this)
+
+  fun getSearchRepository(): SearchRepository {
+    return SearchRepository.getInstance(searchExecutors, getDatabase())
   }
 
   fun getWeatherService(): WeatherService {

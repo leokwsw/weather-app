@@ -1,7 +1,7 @@
 package dev.leonardpark.app.weatherapp.db
 
-import kotlinx.coroutines.flow.Flow
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class SearchDao {

@@ -8,19 +8,19 @@ interface WeatherService {
   @GET("weather")
   fun getWeatherByCityName(
     @Query("q") cityName: String,
-    @Query("appid") appId: String = "95d190a434083879a6398aafd54d9e73"
+    @Query("appid") appId: String = WeatherFactor.APP_KEY
   ): Observable<WeatherResponse>
 
   @GET("weather")
   fun getWeatherByCoordinate(
     @Query("lat") lat: Float,
     @Query("lon") lon: Float,
-    @Query("appid") appId: String = "95d190a434083879a6398aafd54d9e73"
+    @Query("appid") appId: String = WeatherFactor.APP_KEY
   ): Observable<WeatherResponse>
 
   @GET("weather")
   fun getWeatherByZipCode(
     @Query("zip") zip: String,
-    @Query("appid") appId: String = "95d190a434083879a6398aafd54d9e73"
+    @Query("appid") appId: String = WeatherFactor.APP_KEY
   ): Observable<WeatherResponse>
 }

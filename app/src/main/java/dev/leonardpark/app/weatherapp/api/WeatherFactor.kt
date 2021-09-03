@@ -9,6 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 class WeatherFactor {
   companion object {
     const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
+    const val APP_KEY = "95d190a434083879a6398aafd54d9e73"
   }
 
   fun create(): WeatherService {

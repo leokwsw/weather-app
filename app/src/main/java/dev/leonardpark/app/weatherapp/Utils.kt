@@ -1,7 +1,8 @@
-package dev.leonardpark.app.weatherapp.view
+package dev.leonardpark.app.weatherapp
 
 import android.content.Context
 import android.content.res.Configuration
+import java.lang.Double
 
 class Utils {
   companion object {
@@ -12,6 +13,17 @@ class Utils {
         Configuration.UI_MODE_NIGHT_UNDEFINED -> false
         else -> false
       }
+    }
+
+    fun numeric(string: String): Boolean {
+      var numeric = true
+
+      try {
+        Double.parseDouble(string)
+      } catch (e: NumberFormatException) {
+        numeric = false
+      }
+      return numeric
     }
   }
 }

@@ -5,7 +5,7 @@ import android.os.Looper
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
-class SearchExecutors (
+class SearchExecutors(
   diskIO: Executor = Executors.newSingleThreadExecutor(),
   network: Executor = Executors.newFixedThreadPool(3),
   mainThread: Executor = MainThreadExecutor()

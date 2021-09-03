@@ -4,107 +4,93 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import dev.leonardpark.app.weatherapp.R
+import dev.leonardpark.app.weatherapp.Utils
 import dev.leonardpark.app.weatherapp.WeatherApplication
 import dev.leonardpark.app.weatherapp.api.WeatherResponse
 import dev.leonardpark.app.weatherapp.db.SearchEntity
-import dev.leonardpark.app.weatherapp.db.SearchRepository
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import java.lang.Double.parseDouble
 import java.util.*
 
-class WeatherViewModel(private val context: Context) : Observable() {
+class MainActivityViewModel(private val context: Context) : Observable() {
   private val mCompositeDisposable = CompositeDisposable()
 
-  private val weatherApplication = WeatherApplication().create(context)
-  private val weatherService = weatherApplication.getWeatherService()
+  private val mApplication = WeatherApplication().create(context)
+  private val mWeatherService = mApplication.getWeatherService()
+  private val mSearchRepository = mApplication.getSearchRepository()
 
-  var isLoading = MutableLiveData<Boolean>()
   var weatherResponse = MutableLiveData<WeatherResponse?>()
   var searchMethod = MutableLiveData<String>()
+  var searchList: LiveData<List<SearchEntity>> = mSearchRepository.getSearchListLive()
+  var locationStatus = MutableLiveData<Boolean>()
+  var isPermissionGranted = MutableLiveData<Boolean>()
 
-  private val searchRepository: SearchRepository = weatherApplication.getSearchRepository()
-  var getSearchListLive: LiveData<List<SearchEntity>> = searchRepository.getSearchListLive()
-
-  fun search(query: String) {
+  fun querySearch(query: String) {
     insertEntity(query)
     val coordinateArray = query.split(",")
-    if (numeric(query)) {
+    if (Utils.numeric(query)) {
       searchByZipCode(query)
-    } else if (coordinateArray.size == 2 && numeric(coordinateArray[0]) && numeric(coordinateArray[1])) {
+    } else if (
+      coordinateArray.size == 2 &&
+      Utils.numeric(coordinateArray[0]) && Utils.numeric(coordinateArray[1])
+    ) {
       searchByCoordinate(coordinateArray[0].toFloat(), coordinateArray[1].toFloat())
     } else {
       searchByCityName(query)
     }
   }
 
-  private fun numeric(string: String): Boolean {
-    var numeric = true
-
-    try {
-      parseDouble(string)
-    } catch (e: NumberFormatException) {
-      numeric = false
-    }
-    return numeric
-  }
-
+  // region recent search
   private fun insertEntity(query: String) {
-    searchRepository.insertSearches(SearchEntity(query, Date().time))
+    mSearchRepository.insertSearches(SearchEntity(query, Date().time))
   }
 
   fun deleteEntity(searchEntity: SearchEntity) {
-    searchRepository.deleteSearches(searchEntity)
+    mSearchRepository.deleteSearches(searchEntity)
   }
+  // endregion
 
+  // region Request OpenWeather API
   private fun searchByCityName(cityName: String) {
-    isLoading.value = true
     searchMethod.value = context.getString(R.string.method_city_name)
     mCompositeDisposable.add(
-      weatherService.getWeatherByCityName(cityName)
-        .subscribeOn(weatherApplication.subscribeScheduler())
+      mWeatherService.getWeatherByCityName(cityName)
+        .subscribeOn(mApplication.subscribeScheduler())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe({
           weatherResponse.value = it
-          isLoading.value = false
         }, {
           weatherResponse.value = null
-          isLoading.value = false
         })
     )
   }
 
   private fun searchByCoordinate(lat: Float, lon: Float) {
-    isLoading.value = true
     searchMethod.value = context.getString(R.string.method_coordinate)
     mCompositeDisposable.add(
-      weatherService.getWeatherByCoordinate(lat, lon)
-        .subscribeOn(weatherApplication.subscribeScheduler())
+      mWeatherService.getWeatherByCoordinate(lat, lon)
+        .subscribeOn(mApplication.subscribeScheduler())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe({
           weatherResponse.value = it
-          isLoading.value = false
         }, {
           weatherResponse.value = null
-          isLoading.value = false
         })
     )
   }
 
   private fun searchByZipCode(zipCode: String) {
-    isLoading.value = true
     searchMethod.value = context.getString(R.string.method_zip_code)
     mCompositeDisposable.add(
-      weatherService.getWeatherByZipCode(zipCode)
-        .subscribeOn(weatherApplication.subscribeScheduler())
+      mWeatherService.getWeatherByZipCode(zipCode)
+        .subscribeOn(mApplication.subscribeScheduler())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe({
           weatherResponse.value = it
-          isLoading.value = false
         }, {
           weatherResponse.value = null
-          isLoading.value = false
         })
     )
   }
+  // endregion
 }
