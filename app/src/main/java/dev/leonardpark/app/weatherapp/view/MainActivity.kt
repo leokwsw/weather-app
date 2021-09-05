@@ -15,6 +15,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import dev.leonardpark.app.material_serarch_view.MaterialSearchView
 import dev.leonardpark.app.weatherapp.LanguageUtils
@@ -28,13 +29,11 @@ import dev.leonardpark.app.weatherapp.viewmodel.MainActivityViewModel
 
 
 class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener,
-  SearchRecyclerInterface, OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener,
-  GoogleMap.OnMyLocationClickListener {
+  SearchRecyclerInterface, OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener {
 
   companion object {
     private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
     private const val MAPVIEW_BUNDLE_KEY = "MapViewBundleKey"
-    private const val DEFAULT_ZOOM = 15f
   }
 
   private lateinit var mBinding: ActivityMainBinding
@@ -107,8 +106,8 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
     mViewModel = MainActivityViewModel(this)
     mViewModel.weatherResponse.observe(this) { response ->
       val mapLatLng = LatLng(response.coord.lat, response.coord.lon)
-      map.addMarker(MarkerOptions().position(mapLatLng).title(response.name))
-      map.animateCamera(CameraUpdateFactory.newLatLngZoom(mapLatLng, DEFAULT_ZOOM))
+      map.addMarker(MarkerOptions().position(mapLatLng).title(response.name).draggable(true))
+      map.animateCamera(CameraUpdateFactory.newLatLngZoom(mapLatLng, map.cameraPosition.zoom))
       mBinding.tvResponse.text = response.toString()
     }
   }
@@ -191,7 +190,22 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
   override fun onMapReady(googleMap: GoogleMap) {
     map = googleMap
     googleMap.setOnMyLocationButtonClickListener(this)
-    googleMap.setOnMyLocationClickListener(this)
+    googleMap.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
+      override fun onMarkerDragStart(marker: Marker) {
+
+      }
+
+      override fun onMarkerDrag(marker: Marker) {
+
+      }
+
+      override fun onMarkerDragEnd(marker: Marker) {
+        val positionQuery = marker.position.toQuery()
+        mViewModel.querySearch(positionQuery)
+        map.clear()
+      }
+
+    })
     enableMyLocation()
   }
 
@@ -249,14 +263,17 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
 
   @SuppressLint("MissingPermission")
   override fun onMyLocationButtonClick(): Boolean {
-    mViewModel.querySearch("${map.myLocation.latitude},${map.myLocation.longitude}")
+    mViewModel.querySearch(map.myLocation.toQuery())
     return false
   }
 
-  override fun onMyLocationClick(location: Location) {
-    mViewModel.querySearch("${location.latitude},${location.longitude}")
-    val temp = LatLng(location.latitude, location.longitude)
-    map.moveCamera(CameraUpdateFactory.newLatLngZoom(temp, DEFAULT_ZOOM))
+
+  private fun Location.toQuery(): String {
+    return "${this.latitude},${this.longitude}"
+  }
+
+  private fun LatLng.toQuery(): String {
+    return "${this.latitude},${this.longitude}"
   }
   // endregion
 }

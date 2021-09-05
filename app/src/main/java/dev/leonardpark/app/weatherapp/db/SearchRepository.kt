@@ -24,15 +24,21 @@ class SearchRepository(
 
   fun insertSearches(vararg searchEntities: SearchEntity?) {
     searchExecutors.diskIO()
-      .execute { database.getSearchDao().insertSearches(*searchEntities) }
+      .execute { database.getSearchDao().insert(*searchEntities) }
   }
 
   fun deleteSearches(vararg searchEntities: SearchEntity?) {
     searchExecutors.diskIO()
-      .execute { database.getSearchDao().deleteSearches(*searchEntities) }
+      .execute { database.getSearchDao().delete(*searchEntities) }
   }
 
   fun getSearchListLive(): LiveData<List<SearchEntity>> {
-    return database.getSearchDao().getSearchListLive().asLiveData()
+    return database.getSearchDao().getListLive().asLiveData()
+  }
+
+  fun deleteAll() {
+    searchExecutors.diskIO().execute {
+      database.getSearchDao().deleteAll()
+    }
   }
 }

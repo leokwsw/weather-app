@@ -45,6 +45,10 @@ class MainActivityViewModel(private val context: Context) : Observable() {
   fun deleteEntity(searchEntity: SearchEntity) {
     mSearchRepository.deleteSearches(searchEntity)
   }
+
+  fun deleteAllEntity(){
+    mSearchRepository.deleteAll()
+  }
   // endregion
 
   // region Request OpenWeather API

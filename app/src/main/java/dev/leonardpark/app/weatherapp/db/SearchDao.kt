@@ -6,14 +6,17 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 abstract class SearchDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  abstract fun insertSearches(vararg searchEntities: SearchEntity?)
+  abstract fun insert(vararg searchEntities: SearchEntity?)
 
   @Delete
-  abstract fun deleteSearches(vararg searchEntities: SearchEntity?)
+  abstract fun delete(vararg searchEntities: SearchEntity?)
 
   @Query("SELECT * FROM search_table ORDER BY timestamp DESC LIMIT 5")
-  abstract fun getSearchList(): List<SearchEntity>
+  abstract fun getList(): List<SearchEntity>
 
   @Query("SELECT * FROM search_table ORDER BY timestamp DESC LIMIT 5")
-  abstract fun getSearchListLive(): Flow<List<SearchEntity>>
+  abstract fun getListLive(): Flow<List<SearchEntity>>
+
+  @Query("DELETE FROM search_table")
+  abstract fun deleteAll()
 }
