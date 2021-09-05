@@ -2,6 +2,8 @@ package dev.leonardpark.app.weatherapp.view
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -15,6 +17,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import dev.leonardpark.app.material_serarch_view.MaterialSearchView
+import dev.leonardpark.app.weatherapp.LanguageUtils
 import dev.leonardpark.app.weatherapp.PermissionUtils
 import dev.leonardpark.app.weatherapp.PermissionUtils.isPermissionGranted
 import dev.leonardpark.app.weatherapp.R
@@ -47,6 +50,8 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
     mBinding = ActivityMainBinding.inflate(layoutInflater)
     setContentView(mBinding.root)
 
+    this.title = getString(R.string.app_name)
+
     isDark = Utils.isUsingNightModeResources(this)
 
     setSupportActionBar(mBinding.toolbar)
@@ -54,6 +59,47 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
     initBinding()
     initSearch()
     initGoogleMap(savedInstanceState)
+  }
+
+  override fun attachBaseContext(newBase: Context) {
+    super.attachBaseContext(LanguageUtils.setCurrentLocal(newBase))
+  }
+
+  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    menuInflater.inflate(R.menu.menu_main, menu)
+    return true
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return when (item.itemId) {
+      R.id.action_search -> {
+        mBinding.searchHolder.showSearch()
+        true
+      }
+      R.id.action_clear_search -> {
+        mViewModel.deleteAllEntity()
+        true
+      }
+      R.id.action_lang_chi_hk, R.id.action_lang_eng, R.id.action_lang_chi_cn -> {
+        LanguageUtils.lang = when (item.itemId) {
+          R.id.action_lang_chi_hk -> LanguageUtils.LangList.ZT.value
+          R.id.action_lang_eng -> LanguageUtils.LangList.EN.value
+          R.id.action_lang_chi_cn -> LanguageUtils.LangList.ZS.value
+          else -> LanguageUtils.LangList.EN.value
+        }
+        restartApp()
+        true
+      }
+      else -> super.onOptionsItemSelected(item)
+    }
+  }
+
+  private fun restartApp() {
+    val intent =
+      baseContext.packageManager.getLaunchIntentForPackage(baseContext.packageName)
+    intent?.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    finish()
+    startActivity(intent)
   }
 
   // region Binding
@@ -83,20 +129,6 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
           if (isDark) R.color.white else R.color.black
         ), android.graphics.PorterDuff.Mode.SRC_IN
       )
-  }
-
-  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    menuInflater.inflate(R.menu.menu_main, menu)
-    return true
-  }
-
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return if (item.itemId == R.id.action_search) {
-      mBinding.searchHolder.showSearch()
-      true
-    } else {
-      super.onOptionsItemSelected(item)
-    }
   }
 
   override fun onQueryTextSubmit(query: String?): Boolean {

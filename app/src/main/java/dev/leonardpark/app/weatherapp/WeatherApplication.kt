@@ -17,6 +17,7 @@ class WeatherApplication : Application() {
 
   override fun onCreate() {
     super.onCreate()
+    LanguageUtils.init(this)
     searchExecutors = SearchExecutors()
   }
 

@@ -7,4 +7,24 @@
     android:orderInCategory="100"
     android:title="@string/action_search"
     app:showAsAction="always" />
+
+  <item
+    android:id="@+id/action_clear_search"
+    android:title="@string/action_search_clear_all" />
+
+  <item
+    android:id="@+id/action_lang"
+    android:title="@string/languages">
+    <menu>
+      <item
+        android:id="@+id/action_lang_chi_hk"
+        android:title="繁體中文" />
+      <item
+        android:id="@+id/action_lang_eng"
+        android:title="English" />
+      <item
+        android:id="@+id/action_lang_chi_cn"
+        android:title="简体中文" />
+    </menu>
+  </item>
 </menu>

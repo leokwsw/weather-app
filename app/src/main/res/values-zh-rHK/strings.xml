@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">我的天氣</string>
+  <string name="action_search">搜尋</string>
+  <string name="action_search_clear_all">清除所有最近的搜尋記錄</string>
+  <string name="permission_rationale_location">需要訪問定位服務才能演示\'我的天氣\'功能，該功能會在地圖上顯示您的當前位置。</string>
+  <string name="location_permission_denied">這需要位置權限才能啟用\'我的天氣\'。 請重試並授予使用該位置的訪問權限。\n如果該權限已被永久拒絕，可以從系統設置 &gt; 應用程序 &gt; \'我的天氣\'。</string>
+  <string name="permission_required_toast">此應用程序需要位置權限。</string>
+  <string name="languages">語言</string>
+</resources>
