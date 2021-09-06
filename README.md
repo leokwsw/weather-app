@@ -1,5 +1,5 @@
 # iTunes Search
-Sample Android project demonstrating the implementation of [OpenWeather API](https://openweathermap.org/current) and usage of [Google](https://google.github.io/ExoPlayer/) to select location.
+Sample Android project demonstrating the implementation of [OpenWeather API](https://openweathermap.org/current) and usage of [Google Map](https://developers.google.com/maps/documentation/android-sdk/overview) to select location.
 
 # Dependencies
 - [RxJava2](https://github.com/ReactiveX/RxJava) - Reactive programming in Android.
@@ -8,6 +8,8 @@ Sample Android project demonstrating the implementation of [OpenWeather API](htt
 - [RxJava2 Adapter](https://github.com/square/retrofit/tree/master/retrofit-adapters/rxjava2) - An adapter for Retrofit, adapting RxJava 2.x types.
 - [Retrofit2](http://square.github.io/retrofit/) - REST Client for Android and Kotlin.
 - [Okhttp3 Logging Interceptor](https://github.com/square/okhttp/tree/master/okhttp-logging-interceptor) - An OkHttp interceptor which logs HTTP request and response data (used with Retrofit).
+- [Material Search View](https://github.com/leokwsw/Android-Material-SearchView) - Android Search View with recent search recycler view
+- [Google Map](https://developers.google.com/maps/documentation/android-sdk/overview) - Map Solution
 
 # License
 
