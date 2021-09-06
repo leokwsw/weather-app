@@ -19,11 +19,8 @@ class MainActivityViewModel(private val context: Context) : Observable() {
   private val mWeatherService = mApplication.getWeatherService()
   private val mSearchRepository = mApplication.getSearchRepository()
 
-  var weatherResponse = MutableLiveData<WeatherResponse?>()
-  var searchMethod = MutableLiveData<String>()
+  var weatherResponse = MutableLiveData<WeatherResponse>()
   var searchList: LiveData<List<SearchEntity>> = mSearchRepository.getSearchListLive()
-  var locationStatus = MutableLiveData<Boolean>()
-  var isPermissionGranted = MutableLiveData<Boolean>()
 
   fun querySearch(query: String) {
     insertEntity(query)
@@ -52,7 +49,6 @@ class MainActivityViewModel(private val context: Context) : Observable() {
 
   // region Request OpenWeather API
   private fun searchByCityName(cityName: String) {
-    searchMethod.value = context.getString(R.string.method_city_name)
     mCompositeDisposable.add(
       mWeatherService.getWeatherByCityName(cityName)
         .subscribeOn(mApplication.subscribeScheduler())
@@ -66,7 +62,6 @@ class MainActivityViewModel(private val context: Context) : Observable() {
   }
 
   private fun searchByCoordinate(lat: Float, lon: Float) {
-    searchMethod.value = context.getString(R.string.method_coordinate)
     mCompositeDisposable.add(
       mWeatherService.getWeatherByCoordinate(lat, lon)
         .subscribeOn(mApplication.subscribeScheduler())
@@ -80,7 +75,6 @@ class MainActivityViewModel(private val context: Context) : Observable() {
   }
 
   private fun searchByZipCode(zipCode: String) {
-    searchMethod.value = context.getString(R.string.method_zip_code)
     mCompositeDisposable.add(
       mWeatherService.getWeatherByZipCode(zipCode)
         .subscribeOn(mApplication.subscribeScheduler())

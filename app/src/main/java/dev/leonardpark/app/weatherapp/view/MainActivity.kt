@@ -2,40 +2,44 @@ package dev.leonardpark.app.weatherapp.view
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationManager
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.material.snackbar.Snackbar
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import dev.leonardpark.app.material_serarch_view.MaterialSearchView
+import dev.leonardpark.app.weatherapp.PermissionUtils
+import dev.leonardpark.app.weatherapp.PermissionUtils.isPermissionGranted
 import dev.leonardpark.app.weatherapp.R
 import dev.leonardpark.app.weatherapp.Utils
 import dev.leonardpark.app.weatherapp.databinding.ActivityMainBinding
 import dev.leonardpark.app.weatherapp.db.SearchEntity
 import dev.leonardpark.app.weatherapp.viewmodel.MainActivityViewModel
 
+
 class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener,
-  SearchRecyclerInterface {
+  SearchRecyclerInterface, OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener,
+  GoogleMap.OnMyLocationClickListener {
 
   companion object {
     private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
-    private val LOCATION_PERMISSION_ARRAY = arrayOf(
-      Manifest.permission.ACCESS_COARSE_LOCATION,
-      Manifest.permission.ACCESS_FINE_LOCATION
-    )
+    private const val MAPVIEW_BUNDLE_KEY = "MapViewBundleKey"
+    private const val DEFAULT_ZOOM = 15f
   }
 
   private lateinit var mBinding: ActivityMainBinding
   private lateinit var mViewModel: MainActivityViewModel
   private lateinit var mSearchAdapter: SearchRecyclerAdapter
   private var isDark = false
+  private lateinit var map: GoogleMap
+  private var permissionDenied = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -49,56 +53,17 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
 
     initBinding()
     initSearch()
-    initLocation()
+    initGoogleMap(savedInstanceState)
   }
 
   // region Binding
   private fun initBinding() {
     mViewModel = MainActivityViewModel(this)
     mViewModel.weatherResponse.observe(this) { response ->
+      val mapLatLng = LatLng(response.coord.lat, response.coord.lon)
+      map.addMarker(MarkerOptions().position(mapLatLng).title(response.name))
+      map.animateCamera(CameraUpdateFactory.newLatLngZoom(mapLatLng, DEFAULT_ZOOM))
       mBinding.tvResponse.text = response.toString()
-    }
-
-    mViewModel.searchMethod.observe(this) { method ->
-      mBinding.tvSearchMethod.text = String.format(getString(R.string.request_method), method)
-    }
-
-    mViewModel.locationStatus.observe(this) { status ->
-      mBinding.ibLocation.apply {
-        setImageDrawable(
-          ContextCompat.getDrawable(
-            this@MainActivity,
-            if (status) R.drawable.ic_baseline_location_on_24 else R.drawable.ic_baseline_location_off_24
-          )
-        )
-
-        setColorFilter(
-          ContextCompat.getColor(
-            this@MainActivity,
-            if (status) R.color.location_on else if (isDark) R.color.white else R.color.black
-          ), android.graphics.PorterDuff.Mode.SRC_IN
-        )
-
-        setOnClickListener {
-          if (status) {
-            checkLocationPermission()?.let {
-              mViewModel.apply {
-                isPermissionGranted.value = true
-                locationStatus.value = true
-                querySearch("${it.latitude},${it.longitude}")
-              }
-            }
-          }
-        }
-      }
-    }
-
-    mViewModel.isPermissionGranted.observe(this) { granted ->
-      mBinding.tvLocationStatus.text =
-        String.format(
-          getString(R.string.location_permission_),
-          getString(if (granted) R.string.granted else R.string.denied)
-        )
     }
   }
   // endregion
@@ -136,6 +101,7 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
 
   override fun onQueryTextSubmit(query: String?): Boolean {
     mBinding.searchHolder.hideRecycler()
+    map.clear()
     mViewModel.querySearch(query ?: "")
     return true
   }
@@ -148,8 +114,8 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
   override fun onSearchItemClicked(query: String) {
     mBinding.searchHolder.setSearchText(query)
     mBinding.searchHolder.hideRecycler()
+    map.clear()
     mViewModel.querySearch(query)
-    mViewModel.locationStatus.value = false
   }
 
   override fun onSearchDeleteClicked(searchEntity: SearchEntity) {
@@ -158,72 +124,107 @@ class MainActivity : AppCompatActivity(), MaterialSearchView.OnQueryTextListener
 
   // endregion
 
-  // region Location
-
-  private fun initLocation() {
-
-    val hasGPSFeature = packageManager.hasSystemFeature(PackageManager.FEATURE_LOCATION_GPS)
-
-    mBinding.tvLocationStatus.visibility = if (hasGPSFeature) View.VISIBLE else View.GONE
-    mBinding.ibLocation.visibility = if (hasGPSFeature) View.VISIBLE else View.GONE
-
-    mViewModel.isPermissionGranted.value = hasGPSFeature && isLocationGrantedPermission()
-
-  }
-
-  @SuppressLint("MissingPermission")
-  private fun checkLocationPermission(): Location? {
-    val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-    return if (
-      isLocationGrantedPermission()
-    ) {
-      ActivityCompat.requestPermissions(
-        this,
-        LOCATION_PERMISSION_ARRAY,
-        LOCATION_PERMISSION_REQUEST_CODE
-      )
-      null
-    } else {
-      locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)!!
+  // region Google Map
+  private fun initGoogleMap(savedInstanceState: Bundle?) {
+    val mapViewBundle = savedInstanceState?.getBundle(MAPVIEW_BUNDLE_KEY)
+    mBinding.map.let {
+      it.onCreate(mapViewBundle)
+      it.getMapAsync(this)
     }
   }
 
-  private fun isLocationGrantedPermission(): Boolean {
-    return ContextCompat.checkSelfPermission(
-      this,
-      LOCATION_PERMISSION_ARRAY[0]
-    ) == PackageManager.PERMISSION_GRANTED &&
-      ContextCompat.checkSelfPermission(
-        this,
-        LOCATION_PERMISSION_ARRAY[1]
-      ) == PackageManager.PERMISSION_GRANTED
+  override fun onSaveInstanceState(outState: Bundle) {
+    super.onSaveInstanceState(outState)
+    val mapViewBundle = outState.getBundle(MAPVIEW_BUNDLE_KEY) ?: Bundle().also {
+      outState.putBundle(MAPVIEW_BUNDLE_KEY, it)
+    }
+    mBinding.map.onSaveInstanceState(mapViewBundle)
+  }
+
+  override fun onResume() {
+    super.onResume()
+    mBinding.map.onResume()
+  }
+
+  override fun onStart() {
+    super.onStart()
+    mBinding.map.onStart()
+  }
+
+  override fun onStop() {
+    super.onStop()
+    mBinding.map.onStop()
+  }
+
+  override fun onMapReady(googleMap: GoogleMap) {
+    map = googleMap
+    googleMap.setOnMyLocationButtonClickListener(this)
+    googleMap.setOnMyLocationClickListener(this)
+    enableMyLocation()
+  }
+
+  private fun enableMyLocation() {
+    if (!::map.isInitialized) return
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+      == PackageManager.PERMISSION_GRANTED
+    ) {
+      map.isMyLocationEnabled = true
+    } else {
+      PermissionUtils.requestPermission(
+        this, LOCATION_PERMISSION_REQUEST_CODE,
+        Manifest.permission.ACCESS_FINE_LOCATION, true
+      )
+    }
   }
 
   override fun onRequestPermissionsResult(
     requestCode: Int,
-    permissions: Array<out String>,
+    permissions: Array<String>,
     grantResults: IntArray
   ) {
     when (requestCode) {
       LOCATION_PERMISSION_REQUEST_CODE -> {
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-          mViewModel.apply {
-            isPermissionGranted.value = true
-            locationStatus.value = true
-            val location = checkLocationPermission()!!
-            querySearch("${location.latitude},${location.longitude}")
-          }
+        if (
+          isPermissionGranted(
+            permissions,
+            grantResults,
+            Manifest.permission.ACCESS_FINE_LOCATION
+          )
+        ) {
+          enableMyLocation()
         } else {
-          Snackbar.make(
-            mBinding.root,
-            String.format(getString(R.string.location_permission_), getString(R.string.denied)),
-            Snackbar.LENGTH_INDEFINITE
-          ).show()
+          permissionDenied = true
         }
       }
       else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+  }
+
+  override fun onPause() {
+    mBinding.map.onPause()
+    super.onPause()
+  }
+
+  override fun onDestroy() {
+    mBinding.map.onDestroy()
+    super.onDestroy()
+  }
+
+  override fun onLowMemory() {
+    super.onLowMemory()
+    mBinding.map.onLowMemory()
+  }
+
+  @SuppressLint("MissingPermission")
+  override fun onMyLocationButtonClick(): Boolean {
+    mViewModel.querySearch("${map.myLocation.latitude},${map.myLocation.longitude}")
+    return false
+  }
+
+  override fun onMyLocationClick(location: Location) {
+    mViewModel.querySearch("${location.latitude},${location.longitude}")
+    val temp = LatLng(location.latitude, location.longitude)
+    map.moveCamera(CameraUpdateFactory.newLatLngZoom(temp, DEFAULT_ZOOM))
   }
   // endregion
 }
