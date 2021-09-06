@@ -3,7 +3,6 @@ package dev.leonardpark.app.weatherapp.viewmodel
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import dev.leonardpark.app.weatherapp.R
 import dev.leonardpark.app.weatherapp.Utils
 import dev.leonardpark.app.weatherapp.WeatherApplication
 import dev.leonardpark.app.weatherapp.api.WeatherResponse
@@ -46,7 +45,7 @@ class MainActivityViewModel(private val context: Context) : Observable() {
     mSearchRepository.deleteSearches(searchEntity)
   }
 
-  fun deleteAllEntity(){
+  fun deleteAllEntity() {
     mSearchRepository.deleteAll()
   }
   // endregion

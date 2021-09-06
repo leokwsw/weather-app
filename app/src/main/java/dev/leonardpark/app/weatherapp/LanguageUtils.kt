@@ -71,6 +71,4 @@ object LanguageUtils {
       prefs.edit().putString(langKey, lang).apply()
     }
   }
-
-
 }
