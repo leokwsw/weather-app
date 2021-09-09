@@ -1,4 +1,4 @@
-# iTunes Search
+# Weather App
 Sample Android project demonstrating the implementation of [OpenWeather API](https://openweathermap.org/current) and usage of [Google Map](https://developers.google.com/maps/documentation/android-sdk/overview) to select location.
 
 # Dependencies
